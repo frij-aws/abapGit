@@ -22,59 +22,66 @@ ENDCLASS.
 CLASS ZCL_ABAPGIT_BACKGROUND_PULL IMPLEMENTATION.
 
 
-  method CREATE_TRANSPORT.
+  METHOD create_transport.
     IF is_checks-transport-required = abap_true AND is_checks-transport-transport IS INITIAL.
-      data lv_text type AS4TEXT.
-      data lv_name type string.
-      data lv_package type DEVCLASS.
-      data ls_req type TRWBO_REQUEST_HEADER.
-      data lt_task type TRWBO_REQUEST_HEADERS.
-      data lt_user type SCTS_USERS.
-      data ls_user like line of lt_user.
+      SELECT SINGLE * FROM e070use INTO @DATA(wa_e070use)
+        WHERE username = @sy-uname
+          AND trfunction = 'K'.
+      IF sy-subrc = 0.
+        is_checks-transport-transport = wa_e070use-ordernum.
+      ELSE.
+        " no default transport selected yet, create one
+      DATA lv_text TYPE as4text.
+      DATA lv_name TYPE string.
+      DATA lv_package TYPE devclass.
+      DATA ls_req TYPE trwbo_request_header.
+      DATA lt_task TYPE trwbo_request_headers.
+      DATA lt_user TYPE scts_users.
+      DATA ls_user LIKE LINE OF lt_user.
 
-      lv_name = io_repo->MS_DATA-local_settings-DISPLAY_NAME.
-      lv_package = io_repo->GET_PACKAGE( ).
-      concatenate lv_name ' (' io_repo->MS_DATA-BRANCH_NAME ')' into lv_text.
+      lv_name = io_repo->ms_data-local_settings-display_name.
+      lv_package = io_repo->get_package( ).
+      CONCATENATE lv_name ' (' io_repo->ms_data-branch_name ')' INTO lv_text.
 
       ls_user-user = sy-uname.
 *      ls_user-type = 'S'.  " Development, not a repair
-      append ls_user to lt_user.
+      APPEND ls_user TO lt_user.
 
       CALL FUNCTION 'TR_INSERT_REQUEST_WITH_TASKS'
         EXPORTING
-          IV_TYPE                  = 'K'
-          IV_TEXT                  = lv_text
-         IV_OWNER                 = SY-UNAME
+          iv_type                  = 'K'
+          iv_text                  = lv_text
+         iv_owner                 = sy-uname
 *         IV_TARGET                =
 *         IT_ATTRIBUTES            =
-         IT_USERS                 = lt_user
+         it_users                 = lt_user
 *         IV_TARDEVCL              =
-         IV_DEVCLASS              = lv_package
+         iv_devclass              = lv_package
 *         IV_TARLAYER              =
 *         IV_WITH_BADI_CHECK       =
        IMPORTING
-         ES_REQUEST_HEADER        = ls_req
-         ET_TASK_HEADERS          = lt_task
+         es_request_header        = ls_req
+         et_task_headers          = lt_task
        EXCEPTIONS
-         INSERT_FAILED            = 1
-         ENQUEUE_FAILED           = 2
+         insert_failed            = 1
+         enqueue_failed           = 2
          OTHERS                   = 3
                 .
-      IF SY-SUBRC <> 0.
-        RAISE EXCEPTION TYPE ZCX_ABAPGIT_EXCEPTION
+      IF sy-subrc = 0.
+            is_checks-transport-transport = ls_req-trkorr.
+         ELSE.
+        RAISE EXCEPTION TYPE zcx_abapgit_exception
            EXPORTING
-            MSGV1  = sy-msgv1
-            MSGV2  = sy-msgv2
-            MSGV3  = sy-msgv3
-            MSGV4  = sy-msgv4
+            msgv1  = sy-msgv1
+            msgv2  = sy-msgv2
+            msgv3  = sy-msgv3
+            msgv4  = sy-msgv4
             .
 
-* Implement suitable error handling here
-      else.
-        is_checks-transport-transport = ls_req-trkorr.
       ENDIF.
+        ENDIF.
     ENDIF.
-  endmethod.
+  ENDMETHOD.
 
 
   METHOD zif_abapgit_background~get_description.
