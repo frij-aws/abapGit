@@ -24,12 +24,12 @@ CLASS ZCL_ABAPGIT_BACKGROUND_PULL IMPLEMENTATION.
 
   METHOD create_transport.
     IF is_checks-transport-required = abap_true AND is_checks-transport-transport IS INITIAL.
-      SELECT SINGLE * FROM e070use INTO @DATA(wa_e070use)
-        WHERE username = @sy-uname
-          AND trfunction = 'K'.
-      IF sy-subrc = 0.
-        is_checks-transport-transport = wa_e070use-ordernum.
-      ELSE.
+"      SELECT SINGLE * FROM e070use INTO @DATA(wa_e070use)
+"        WHERE username = @sy-uname
+"          AND trfunction = 'K'.
+"      IF sy-subrc = 0.
+"        is_checks-transport-transport = wa_e070use-ordernum.
+"      ELSE.
         " no default transport selected yet, create one
       DATA lv_text TYPE as4text.
       DATA lv_name TYPE string.
@@ -79,7 +79,7 @@ CLASS ZCL_ABAPGIT_BACKGROUND_PULL IMPLEMENTATION.
             .
 
       ENDIF.
-        ENDIF.
+"        ENDIF.
     ENDIF.
   ENDMETHOD.
 
