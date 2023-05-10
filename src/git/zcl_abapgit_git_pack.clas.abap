@@ -242,6 +242,7 @@ CLASS ZCL_ABAPGIT_GIT_PACK IMPLEMENTATION.
           message |total length was { xstrlen( iv_data ) }| type 'S'.
         endif.
 
+        " xstrlen( lv_data ) < lv_compressed_len or
         IF lv_compressed(lv_compressed_len) <> lv_data(lv_compressed_len).
           "Lets try with zlib before error in out for good
           "This fixes issues with TFS 2017 and visualstudio.com Git repos
@@ -282,6 +283,7 @@ CLASS ZCL_ABAPGIT_GIT_PACK IMPLEMENTATION.
     lv_len = xstrlen( iv_data ) - 20.
     lv_xstring = iv_data(lv_len).
     lv_sha1 = zcl_abapgit_hash=>sha1_raw( lv_xstring ).
+    message |{ lv_uindex } len { lv_len } sha1 { lv_sha1 }| type 'S'.
     IF to_upper( lv_sha1 ) <> lv_data.
       zcx_abapgit_exception=>raise( |SHA1 at end of pack doesnt match| ).
     ENDIF.
