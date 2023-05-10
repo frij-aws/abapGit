@@ -234,6 +234,14 @@ CLASS ZCL_ABAPGIT_GIT_PACK IMPLEMENTATION.
             gzip_out       = lv_compressed
             gzip_out_len   = lv_compressed_len ).
 
+        "debugging V902485449
+        if lv_uindex = lv_objects.  " last object
+          message |***CHECKING index { lv_uindex } of { lv_objects } objects| type 'S'.
+          message |xstrlen( lv_data ) = { xstrlen( lv_data ) }| type 'S'.
+          message |lv_compressed_len = { lv_compressed_len }| type 'S'.
+          message |total length was { xstrlen( iv_data ) }| type 'S'.
+        endif.
+
         IF lv_compressed(lv_compressed_len) <> lv_data(lv_compressed_len).
           "Lets try with zlib before error in out for good
           "This fixes issues with TFS 2017 and visualstudio.com Git repos
