@@ -242,8 +242,8 @@ CLASS ZCL_ABAPGIT_GIT_PACK IMPLEMENTATION.
           message |total length was { xstrlen( iv_data ) }| type 'S'.
         endif.
 
-        " xstrlen( lv_data ) < lv_compressed_len or
-        IF lv_compressed(lv_compressed_len) <> lv_data(lv_compressed_len).
+        " temporary workaround for V902485449
+        IF xstrlen( lv_data ) < lv_compressed_len or lv_compressed(lv_compressed_len) <> lv_data(lv_compressed_len).
           "Lets try with zlib before error in out for good
           "This fixes issues with TFS 2017 and visualstudio.com Git repos
           zlib_decompress( CHANGING cv_data = lv_data
