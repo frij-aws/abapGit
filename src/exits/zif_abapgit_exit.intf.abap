@@ -11,6 +11,10 @@ INTERFACE zif_abapgit_exit
     ty_ci_repos TYPE TABLE OF ty_ci_repo .
   TYPES:
     ty_object_types TYPE STANDARD TABLE OF tadir-object WITH DEFAULT KEY .
+  TYPES:
+    BEGIN OF ty_class_key,
+      clsname TYPE abap_classname,
+    END OF ty_class_key .
 
   METHODS adjust_display_commit_url
     IMPORTING
@@ -50,7 +54,7 @@ INTERFACE zif_abapgit_exit
       !cv_proxy_url TYPE string .
   METHODS change_supported_data_objects
     CHANGING
-      !ct_objects TYPE zif_abapgit_data_supporter=>ty_objects.
+      !ct_objects TYPE zif_abapgit_data_supporter=>ty_objects .
   METHODS change_supported_object_types
     CHANGING
       !ct_types TYPE ty_object_types .
@@ -67,9 +71,6 @@ INTERFACE zif_abapgit_exit
       VALUE(ri_client) TYPE REF TO if_http_client
     RAISING
       zcx_abapgit_exception .
-  TYPES: BEGIN OF ty_class_key,
-           clsname TYPE abap_classname,
-         END OF ty_class_key.
   METHODS custom_serialize_abap_clif
     IMPORTING
       !is_class_key    TYPE ty_class_key
@@ -139,5 +140,8 @@ INTERFACE zif_abapgit_exit
     IMPORTING
       !io_menu TYPE REF TO zcl_abapgit_html_toolbar
       !iv_key  TYPE zif_abapgit_persistence=>ty_value
-      !iv_act  TYPE string.
+      !iv_act  TYPE string .
+  METHODS change_checks
+    CHANGING
+      !cs_checks TYPE zif_abapgit_definitions=>ty_deserialize_checks .
 ENDINTERFACE.
