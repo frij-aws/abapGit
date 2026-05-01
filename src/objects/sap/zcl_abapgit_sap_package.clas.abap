@@ -132,52 +132,95 @@ CLASS zcl_abapgit_sap_package IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    cl_package_factory=>create_new_package(
-      EXPORTING
-        i_reuse_deleted_object     = abap_true
-*        i_suppress_dialog          = abap_true " does not exist in 730
-      IMPORTING
-        e_package                  = li_package
-      CHANGING
-        c_package_data             = ls_package
-      EXCEPTIONS
-        object_already_existing    = 1
-        object_just_created        = 2
-        not_authorized             = 3
-        wrong_name_prefix          = 4
-        undefined_name             = 5
-        reserved_local_name        = 6
-        invalid_package_name       = 7
-        short_text_missing         = 8
-        software_component_invalid = 9
-        layer_invalid              = 10
-        author_not_existing        = 11
-        component_not_existing     = 12
-        component_missing          = 13
-        prefix_in_use              = 14
-        unexpected_error           = 15
-        intern_err                 = 16
-        no_access                  = 17
-*        invalid_translation_depth  = 18
-*        wrong_mainpack_value       = 19
-*        superpackage_invalid       = 20
-*        error_in_cts_checks        = 21
-        OTHERS                     = 18 ).
+    " Try with i_suppress_dialog (available on S/4HANA and newer).
+    " Dynamic call so it compiles on older releases where the parameter
+    " does not exist; cx_root catches the runtime error on those systems.
+    TRY.
+        CALL METHOD cl_package_factory=>('CREATE_NEW_PACKAGE')
+          EXPORTING
+            i_reuse_deleted_object     = abap_true
+            i_suppress_dialog          = abap_true
+          IMPORTING
+            e_package                  = li_package
+          CHANGING
+            c_package_data             = ls_package
+          EXCEPTIONS
+            object_already_existing    = 1
+            object_just_created        = 2
+            not_authorized             = 3
+            wrong_name_prefix          = 4
+            undefined_name             = 5
+            reserved_local_name        = 6
+            invalid_package_name       = 7
+            short_text_missing         = 8
+            software_component_invalid = 9
+            layer_invalid              = 10
+            author_not_existing        = 11
+            component_not_existing     = 12
+            component_missing          = 13
+            prefix_in_use              = 14
+            unexpected_error           = 15
+            intern_err                 = 16
+            no_access                  = 17
+            OTHERS                     = 18.
+      CATCH cx_root.
+        cl_package_factory=>create_new_package(
+          EXPORTING
+            i_reuse_deleted_object     = abap_true
+          IMPORTING
+            e_package                  = li_package
+          CHANGING
+            c_package_data             = ls_package
+          EXCEPTIONS
+            object_already_existing    = 1
+            object_just_created        = 2
+            not_authorized             = 3
+            wrong_name_prefix          = 4
+            undefined_name             = 5
+            reserved_local_name        = 6
+            invalid_package_name       = 7
+            short_text_missing         = 8
+            software_component_invalid = 9
+            layer_invalid              = 10
+            author_not_existing        = 11
+            component_not_existing     = 12
+            component_missing          = 13
+            prefix_in_use              = 14
+            unexpected_error           = 15
+            intern_err                 = 16
+            no_access                  = 17
+            OTHERS                     = 18 ).
+    ENDTRY.
     IF sy-subrc <> 0.
       zcx_abapgit_exception=>raise_t100( ).
     ENDIF.
 
-    li_package->save(
-*      EXPORTING
-*        i_suppress_dialog     = abap_true    " Controls whether popups can be transmitted
-      EXCEPTIONS
-        object_invalid        = 1
-        object_not_changeable = 2
-        cancelled_in_corr     = 3
-        permission_failure    = 4
-        unexpected_error      = 5
-        intern_err            = 6
-        OTHERS                = 7 ).
+    " Try with i_suppress_dialog (available on S/4HANA and newer).
+    " Dynamic call so it compiles on older releases where the parameter
+    " does not exist; cx_root catches the runtime error on those systems.
+    TRY.
+        CALL METHOD li_package->('SAVE')
+          EXPORTING
+            i_suppress_dialog     = abap_true
+          EXCEPTIONS
+            object_invalid        = 1
+            object_not_changeable = 2
+            cancelled_in_corr     = 3
+            permission_failure    = 4
+            unexpected_error      = 5
+            intern_err            = 6
+            OTHERS                = 7.
+      CATCH cx_root.
+        li_package->save(
+          EXCEPTIONS
+            object_invalid        = 1
+            object_not_changeable = 2
+            cancelled_in_corr     = 3
+            permission_failure    = 4
+            unexpected_error      = 5
+            intern_err            = 6
+            OTHERS                = 7 ).
+    ENDTRY.
     IF sy-subrc <> 0.
 
       MESSAGE ID sy-msgid TYPE sy-msgty NUMBER sy-msgno
